@@ -1,7 +1,31 @@
 #!/bin/bash
-# Instagram Bot Script v3.5 Final Aman
+# Instagram Bot Script v3.5 Final Aman + Auto Install Dependencies
 # by developer Dikha Pormes
 # Jangan disebarkan tanpa seijin developer
+
+# -----------------------------
+# AUTO INSTALL DEPENDENCIES
+# -----------------------------
+install_dependencies() {
+    echo -e "\033[36m[INFO] Mengecek paket yang dibutuhkan...\033[0m"
+    packages=("bash" "curl" "bc")
+    for pkg in "${packages[@]}"; do
+        if ! command -v $pkg &> /dev/null; then
+            echo -e "\033[33m[INFO] Paket $pkg belum terpasang, menginstal...\033[0m"
+            if command -v apt &> /dev/null; then
+                sudo apt update && sudo apt install -y $pkg
+            elif command -v pkg &> /dev/null; then
+                pkg install -y $pkg
+            else
+                echo -e "\033[31m[ERROR] Tidak menemukan package manager (apt/pkg). Pasang paket $pkg manual.\033[0m"
+                exit 1
+            fi
+        else
+            echo -e "\033[32m[INFO] Paket $pkg sudah terpasang\033[0m"
+        fi
+    done
+}
+install_dependencies
 
 # -----------------------------
 # CONFIG
