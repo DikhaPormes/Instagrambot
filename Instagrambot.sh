@@ -1,7 +1,7 @@
 #!/bin/bash
-# Instagram Bot Script v3.5 Final Aman + Auto Install Dependencies
+# Instagram Bot Script v3.6 Aman + Cookie Manual
 # by developer Dikha Pormes
-# Jangan disebarkan tanpa seijin developer
+# Jangan disebarkan tanpa izin
 
 # -----------------------------
 # AUTO INSTALL DEPENDENCIES
@@ -49,31 +49,21 @@ RESET="\033[0m"
 # -----------------------------
 print_banner() {
 cat << EOF
-${CYAN}🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟
-${MAGENTA}      📸 InstaBot v3.5 Final Aman 📸      
-${CYAN}🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟
-${YELLOW}Follow/Unfollow otomatis + animasi RPG aman
-${GREEN}💖 Buat akun kamu lebih aktif dengan aman 💖
+${CYAN}🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟
+${MAGENTA}      📸 InstaBot v3.6 Aman 📸      
+${CYAN}🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟
+${YELLOW}Follow/Unfollow otomatis + animasi RPG
+${GREEN}💖 Buat akun kamu lebih aktif 💖
 ${RED}✍️ by developer Dikha Pormes, jangan disebarkan tanpa izin
 EOF
 echo -e "${RESET}"
 }
 
-login() {
-    read -p "Username: " IG_USER
-    read -s -p "Password: " IG_PASS
-    echo
-    CSRF=$(curl -s -c $COOKIE_FILE -A "$USER_AGENT" "https://www.instagram.com/accounts/login/" | grep -o 'csrf_token":"[^"]*' | cut -d'"' -f3)
-    response=$(curl -s -c $COOKIE_FILE -A "$USER_AGENT" \
-        -d "username=$IG_USER&password=$IG_PASS" \
-        -X POST "https://www.instagram.com/accounts/login/ajax/" \
-        -H "Content-Type: application/x-www-form-urlencoded" \
-        -H "X-CSRFToken: $CSRF" \
-        -H "X-Requested-With: XMLHttpRequest")
-    if echo "$response" | grep -q '"authenticated":true'; then
-        echo -e "${GREEN}✅ Login sukses! Cookies tersimpan di $COOKIE_FILE${RESET}"
-    else
-        echo -e "${RED}❌ Login gagal, cek username/password${RESET}"
+check_cookie() {
+    if [[ ! -f $COOKIE_FILE ]]; then
+        echo -e "${RED}[!] File cookie $COOKIE_FILE tidak ditemukan.${RESET}"
+        echo -e "${YELLOW}→ Cara: login di browser, export sessionid, simpan di $COOKIE_FILE${RESET}"
+        exit 1
     fi
 }
 
@@ -122,6 +112,7 @@ progress_bar_rpg() {
 }
 
 follow_user() {
+    check_cookie
     local target_user="$1"
     local user_id=$(get_user_id $target_user)
     if [[ -z "$user_id" ]]; then return 1; fi
@@ -131,10 +122,11 @@ follow_user() {
         -H "X-Requested-With: XMLHttpRequest" \
         -o /dev/null
     progress_bar_rpg 3
-    sleep $((10 + RANDOM % 11)) # delay follow aman 10-20 detik
+    sleep $((10 + RANDOM % 11))
 }
 
 unfollow_user() {
+    check_cookie
     local target_user="$1"
     local user_id=$(get_user_id $target_user)
     if [[ -z "$user_id" ]]; then return 1; fi
@@ -144,7 +136,7 @@ unfollow_user() {
         -H "X-Requested-With: XMLHttpRequest" \
         -o /dev/null
     progress_bar_rpg 3
-    sleep $((10 + RANDOM % 11)) # delay unfollow aman 10-20 detik
+    sleep $((10 + RANDOM % 11))
 }
 
 auto_loop() {
@@ -157,7 +149,7 @@ auto_loop() {
             unfollow_user $username
         done
         echo -e "${YELLOW}⏳ Istirahat sebentar sebelum loop berikutnya...${RESET}"
-        sleep $((loop_delay + RANDOM % 16)) # delay random antar loop 15-30 detik
+        sleep $((loop_delay + RANDOM % 16))
     done
 }
 
@@ -167,8 +159,8 @@ auto_loop() {
 print_banner
 while true; do
     echo -e "${CYAN}--------------------------------${RESET}"
-    echo -e "${MAGENTA}📋 Menu InstaBot v3.5 Final Aman${RESET}"
-    echo -e "${CYAN}1) Login 🔑${RESET}"
+    echo -e "${MAGENTA}📋 Menu InstaBot v3.6 Aman${RESET}"
+    echo -e "${CYAN}1) Gunakan Cookie Manual 🔑${RESET}"
     echo -e "${CYAN}2) Follow User ➕${RESET}"
     echo -e "${CYAN}3) Unfollow User ➖${RESET}"
     echo -e "${CYAN}4) Auto Follow/Unfollow Loop 🔄${RESET}"
@@ -176,7 +168,7 @@ while true; do
     echo -e "${CYAN}--------------------------------${RESET}"
     read -p "Pilih: " choice
     case $choice in
-        1) login ;;
+        1) echo -e "${GREEN}✅ Pastikan $COOKIE_FILE sudah diisi sessionid dari browser.${RESET}" ;;
         2) read -p "Username target: " target; follow_user $target ;;
         3) read -p "Username target: " target; unfollow_user $target ;;
         4) auto_loop ;;
